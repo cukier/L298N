@@ -1,15 +1,61 @@
-CCS PCH C Compiler, Version 4.140, 22098               22-set-14 13:41
+CCS PCH C Compiler, Version 4.140, 22098               22-set-14 14:13
 
                Filename:   D:\Projetos\L298N\l298n.lst
 
-               ROM used:   148 bytes (0%)
-                           Largest free fragment is 32620
-               RAM used:   4 (0%) at main() level
-                           7 (0%) worst case
-               Stack:     2 locations
+               ROM used:   288 bytes (1%)
+                           Largest free fragment is 32476
+               RAM used:   26 (2%) at main() level
+                           26 (2%) worst case
+               Stack:     1 worst case (0 in main + 1 for interrupts)
 
 *
-0000:  GOTO   0070
+0000:  GOTO   00E6
+*
+0008:  MOVWF  04
+000A:  MOVFF  FD8,05
+000E:  MOVFF  FE0,06
+0012:  MOVLB  0
+0014:  MOVFF  FE9,0C
+0018:  MOVFF  FEA,07
+001C:  MOVFF  FE1,08
+0020:  MOVFF  FE2,09
+0024:  MOVFF  FD9,0A
+0028:  MOVFF  FDA,0B
+002C:  MOVFF  FF3,12
+0030:  MOVFF  FF4,13
+0034:  MOVFF  FFA,14
+0038:  MOVFF  FF5,15
+003C:  MOVFF  FF6,16
+0040:  MOVFF  FF7,17
+0044:  MOVFF  00,0E
+0048:  MOVFF  01,0F
+004C:  MOVFF  02,10
+0050:  MOVFF  03,11
+0054:  BTFSS  F9D.2
+0056:  GOTO   0060
+005A:  BTFSC  F9E.2
+005C:  GOTO   00AE
+0060:  MOVFF  0E,00
+0064:  MOVFF  0F,01
+0068:  MOVFF  10,02
+006C:  MOVFF  11,03
+0070:  MOVFF  0C,FE9
+0074:  MOVFF  07,FEA
+0078:  BSF    07.7
+007A:  MOVFF  08,FE1
+007E:  MOVFF  09,FE2
+0082:  MOVFF  0A,FD9
+0086:  MOVFF  0B,FDA
+008A:  MOVFF  12,FF3
+008E:  MOVFF  13,FF4
+0092:  MOVFF  14,FFA
+0096:  MOVFF  15,FF5
+009A:  MOVFF  16,FF6
+009E:  MOVFF  17,FF7
+00A2:  MOVF   04,W
+00A4:  MOVFF  06,FE0
+00A8:  MOVFF  05,FD8
+00AC:  RETFIE 0
 .................... /* 
 ....................  * l298n.c 
 ....................  * 
@@ -25,68 +71,103 @@ CCS PCH C Compiler, Version 4.140, 22098               22-set-14 13:41
 ....................  
 .................... #FUSES HS 
 ....................  
-.................... #use delay(clock=16MHz) 
+.................... #use delay(clock=15MHz) 
 .................... #use rs232(xmit=PIN_C6, baud=9600) 
-*
-000A:  BCF    F94.6
-000C:  BCF    F8B.6
-000E:  MOVLW  08
-0010:  MOVWF  01
-0012:  BRA    0014
-0014:  NOP   
-0016:  BSF    01.7
-0018:  BRA    0036
-001A:  BCF    01.7
-001C:  RRCF   07,F
-001E:  BTFSC  FD8.0
-0020:  BSF    F8B.6
-0022:  BTFSS  FD8.0
-0024:  BCF    F8B.6
-0026:  BSF    01.6
-0028:  BRA    0036
-002A:  BCF    01.6
-002C:  DECFSZ 01,F
-002E:  BRA    001C
-0030:  BRA    0032
-0032:  NOP   
-0034:  BSF    F8B.6
-0036:  MOVLW  84
-0038:  MOVWF  FE9
-003A:  DECFSZ FE9,F
-003C:  BRA    003A
-003E:  BRA    0040
-0040:  NOP   
-0042:  BTFSC  01.7
-0044:  BRA    001A
-0046:  BTFSC  01.6
-0048:  BRA    002A
-004A:  GOTO   0062 (RETURN)
 ....................  
-.................... int main(void) { 
-*
-0070:  CLRF   FF8
-0072:  BCF    FD0.7
-0074:  CLRF   FEA
-0076:  CLRF   FE9
-0078:  BCF    F94.6
-007A:  BSF    F8B.6
-007C:  BSF    FC1.0
-007E:  BSF    FC1.1
-0080:  BSF    FC1.2
-0082:  BCF    FC1.3
+.................... #define ccp_nr 15000 
 ....................  
-.................... 	printf("hello"); 
-0084:  MOVLW  04
-0086:  MOVWF  FF6
-0088:  MOVLW  00
-008A:  MOVWF  FF7
-008C:  BRA    004E
-.................... 	return 0; 
-008E:  MOVLW  00
-0090:  MOVWF  01
+.................... short ctrl; 
 ....................  
+.................... #int_ccp1 
+.................... void ccp1_isr() { 
+.................... 	clear_interrupt(INT_CCP1); 
+00AE:  BCF    F9E.2
+.................... 	ctrl = !ctrl; 
+00B0:  BTG    19.0
+.................... 	if (ctrl) { 
+00B2:  BTFSS  19.0
+00B4:  BRA    00CC
+.................... 		setup_ccp1(CCP_COMPARE_CLR_ON_MATCH); 
+00B6:  BCF    F94.2
+00B8:  BSF    F8B.2
+00BA:  MOVLW  09
+00BC:  MOVWF  FBD
+.................... 		set_timer1(0); 
+00BE:  CLRF   FCF
+00C0:  CLRF   FCE
+.................... 		CCP_1 = ccp_nr; 
+00C2:  MOVLW  3A
+00C4:  MOVWF  FBF
+00C6:  MOVLW  98
+00C8:  MOVWF  FBE
+.................... 	} else { 
+00CA:  BRA    00E0
+.................... 		setup_ccp1(CCP_COMPARE_SET_ON_MATCH); 
+00CC:  BCF    F94.2
+00CE:  BCF    F8B.2
+00D0:  MOVLW  08
+00D2:  MOVWF  FBD
+.................... 		set_timer1(0); 
+00D4:  CLRF   FCF
+00D6:  CLRF   FCE
+.................... 		CCP_1 = ccp_nr; 
+00D8:  MOVLW  3A
+00DA:  MOVWF  FBF
+00DC:  MOVLW  98
+00DE:  MOVWF  FBE
+.................... 	} 
 .................... } 
-0092:  SLEEP 
+....................  
+00E0:  BCF    F9E.2
+00E2:  GOTO   0060
+.................... int main(void) { 
+00E6:  CLRF   FF8
+00E8:  BCF    FD0.7
+00EA:  BSF    07.7
+00EC:  CLRF   FEA
+00EE:  CLRF   FE9
+00F0:  BCF    F94.6
+00F2:  BSF    F8B.6
+00F4:  BSF    FC1.0
+00F6:  BSF    FC1.1
+00F8:  BSF    FC1.2
+00FA:  BCF    FC1.3
+....................  
+.................... 	setup_ccp1(CCP_COMPARE_CLR_ON_MATCH); 
+00FC:  BCF    F94.2
+00FE:  BSF    F8B.2
+0100:  MOVLW  09
+0102:  MOVWF  FBD
+.................... 	set_timer1(0); 
+0104:  CLRF   FCF
+0106:  CLRF   FCE
+.................... 	CCP_1 = ccp_nr; 
+0108:  MOVLW  3A
+010A:  MOVWF  FBF
+010C:  MOVLW  98
+010E:  MOVWF  FBE
+.................... 	setup_timer_1(T1_INTERNAL | T1_DIV_BY_1); 
+0110:  MOVLW  85
+0112:  MOVWF  FCD
+....................  
+.................... 	clear_interrupt(INT_CCP1); 
+0114:  BCF    F9E.2
+.................... 	enable_interrupts(INT_CCP1); 
+0116:  BSF    F9D.2
+.................... 	enable_interrupts(GLOBAL); 
+0118:  MOVLW  C0
+011A:  IORWF  FF2,F
+....................  
+.................... 	while (TRUE) { 
+....................  
+.................... 	} 
+011C:  BRA    011C
+....................  
+.................... 	return 0; 
+011E:  MOVLW  00
+0120:  MOVWF  01
+.................... } 
+0122:  SLEEP 
 
 Configuration Fuses:
    Word  1: 2200   HS NOOSCSEN

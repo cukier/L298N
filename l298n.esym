@@ -1,7 +1,7 @@
 D G "__PCH__" 0 0 ""4.140""
 D G "__DEVICE__" 0 0 ""
 D G "__DATE__" 0 0 ""22-set-14""
-D G "__TIME__" 0 0 ""13:41:14"" "* l298n.c"
+D G "__TIME__" 0 0 ""14:13:05"" "* l298n.c"
 C G "" 0 1 1 "*"
 C G "" 0 1 1 "*"
 d G "PIN_A0" 1 22 "31744"
@@ -202,7 +202,10 @@ d G "INT_CCP2" 1 316 "0x00A001"
 d G "INT_BUSCOL" 1 317 "0x00A008"
 d G "INT_LOWVOLT" 1 318 "0x00A004"
 d G "INT_EEPROM" 1 319 "0x00A010"
-F G "main" 0 15 "int8()"
+D G "ccp_nr" 0 15 "15000"
+V G "ctrl" 0 17 "int1"
+F G "ccp1_isr" 0 20 "void()"
+F G "MAIN" 0 34 "int8()"
 F B "reset_cpu" 0 0
 F B "abs" 1 0
 F B "sleep" 0 0

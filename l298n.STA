@@ -1,0 +1,46 @@
+
+ROM used:   148 (0%)
+            148 (0%) including unused fragments
+
+            0 Average locations per line
+            74 Average locations per statement
+
+RAM used:   4 (0%) at main() level
+            7 (0%) worst case
+
+Stack used: 2/31 worst case (2 in main + 0 for interrupts)
+
+Lines Stmts  %   Files
+----- ----- ---  -----
+   21     2 100  l298n.c
+  322     0   0  C:\PICC\devices\18F252.h
+----- -----
+  343     2 Total
+
+Page ROM  %  RAM   Vol Diff  Functions:
+---- --- --- ---   --- ----  ----------
+0     68  23   1             @PUTCHAR_1_
+0     36  12   0    35  1.1  main
+0      6   2   0             @const72
+0     34  11   2             @PSTRINGC_62
+ Inline        0             @cinit1
+
+Program metrics:
+    Functions               1
+    Statements              2
+    Comments                90
+    Volume (V)              39
+    Difficulty (D)          0.7
+    Effort to implement (E) 28
+    Time to implement (T)   0 minutes
+    Est Delivered Bugs (B)  0
+    Cyclomatic Complexity   1
+    Maintainability (MI)    183
+
+ Segment     Used  Free
+-----------  ----  ----
+00000-00002     4  0  
+00004-07FFE   144  32620  
+
+
+
