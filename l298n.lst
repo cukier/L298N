@@ -1,0 +1,98 @@
+CCS PCH C Compiler, Version 4.140, 22098               22-set-14 11:42
+
+               Filename:   D:\Projetos\L298N\l298n.lst
+
+               ROM used:   148 bytes (0%)
+                           Largest free fragment is 32620
+               RAM used:   4 (0%) at main() level
+                           7 (0%) worst case
+               Stack:     2 locations
+
+*
+0000:  GOTO   0070
+.................... /* 
+....................  * l298n.c 
+....................  * 
+....................  *  Created on: 22/09/2014 
+....................  *      Author: cuki 
+....................  */ 
+....................  
+.................... #include<18F252.h> 
+.................... //////// Standard Header file for the PIC18F252 device //////////////// 
+.................... #device PIC18F252 
+.................... #list 
+....................  
+....................  
+.................... #FUSES HS 
+....................  
+.................... #use delay(clock=16MHz) 
+.................... #use rs232(xmit=PIN_C6, baud=9600) 
+*
+000A:  BCF    F94.6
+000C:  BCF    F8B.6
+000E:  MOVLW  08
+0010:  MOVWF  01
+0012:  BRA    0014
+0014:  NOP   
+0016:  BSF    01.7
+0018:  BRA    0036
+001A:  BCF    01.7
+001C:  RRCF   07,F
+001E:  BTFSC  FD8.0
+0020:  BSF    F8B.6
+0022:  BTFSS  FD8.0
+0024:  BCF    F8B.6
+0026:  BSF    01.6
+0028:  BRA    0036
+002A:  BCF    01.6
+002C:  DECFSZ 01,F
+002E:  BRA    001C
+0030:  BRA    0032
+0032:  NOP   
+0034:  BSF    F8B.6
+0036:  MOVLW  84
+0038:  MOVWF  FE9
+003A:  DECFSZ FE9,F
+003C:  BRA    003A
+003E:  BRA    0040
+0040:  NOP   
+0042:  BTFSC  01.7
+0044:  BRA    001A
+0046:  BTFSC  01.6
+0048:  BRA    002A
+004A:  GOTO   0062 (RETURN)
+....................  
+.................... int main(void) { 
+*
+0070:  CLRF   FF8
+0072:  BCF    FD0.7
+0074:  CLRF   FEA
+0076:  CLRF   FE9
+0078:  BCF    F94.6
+007A:  BSF    F8B.6
+007C:  BSF    FC1.0
+007E:  BSF    FC1.1
+0080:  BSF    FC1.2
+0082:  BCF    FC1.3
+....................  
+.................... 	printf("hello"); 
+0084:  MOVLW  04
+0086:  MOVWF  FF6
+0088:  MOVLW  00
+008A:  MOVWF  FF7
+008C:  BRA    004E
+.................... 	return 0; 
+008E:  MOVLW  00
+0090:  MOVWF  01
+....................  
+.................... } 
+0092:  SLEEP 
+
+Configuration Fuses:
+   Word  1: 2200   HS NOOSCSEN
+   Word  2: 0E0E   PUT BROWNOUT BORV20 NOWDT WDT128
+   Word  3: 0100   CCP2C1
+   Word  4: 0081   STVREN NOLVP NODEBUG
+   Word  5: C00F   NOPROTECT NOCPB NOCPD
+   Word  6: E00F   NOWRT NOWRTC NOWRTB NOWRTD
+   Word  7: 400F   NOEBTR NOEBTRB
