@@ -1,15 +1,15 @@
-CCS PCH C Compiler, Version 4.140, 22098               22-set-14 16:30
+CCS PCH C Compiler, Version 4.140, 22098               23-set-14 11:13
 
                Filename:   D:\Projetos\L298N\l298n.lst
 
-               ROM used:   518 bytes (2%)
-                           Largest free fragment is 32246
-               RAM used:   28 (2%) at main() level
-                           28 (2%) worst case
+               ROM used:   420 bytes (1%)
+                           Largest free fragment is 32344
+               RAM used:   35 (2%) at main() level
+                           36 (2%) worst case
                Stack:     2 worst case (1 in main + 1 for interrupts)
 
 *
-0000:  GOTO   0154
+0000:  GOTO   011C
 *
 0008:  MOVWF  04
 000A:  MOVFF  FD8,05
@@ -31,35 +31,31 @@ CCS PCH C Compiler, Version 4.140, 22098               22-set-14 16:30
 0048:  MOVFF  01,0F
 004C:  MOVFF  02,10
 0050:  MOVFF  03,11
-0054:  BTFSS  F9D.2
+0054:  BTFSS  FF2.5
 0056:  GOTO   0060
-005A:  BTFSC  F9E.2
-005C:  GOTO   00BA
-0060:  BTFSS  FA0.0
-0062:  GOTO   006C
-0066:  BTFSC  FA1.0
-0068:  GOTO   00F2
-006C:  MOVFF  0E,00
-0070:  MOVFF  0F,01
-0074:  MOVFF  10,02
-0078:  MOVFF  11,03
-007C:  MOVFF  0C,FE9
-0080:  MOVFF  07,FEA
-0084:  BSF    07.7
-0086:  MOVFF  08,FE1
-008A:  MOVFF  09,FE2
-008E:  MOVFF  0A,FD9
-0092:  MOVFF  0B,FDA
-0096:  MOVFF  12,FF3
-009A:  MOVFF  13,FF4
-009E:  MOVFF  14,FFA
-00A2:  MOVFF  15,FF5
-00A6:  MOVFF  16,FF6
-00AA:  MOVFF  17,FF7
-00AE:  MOVF   04,W
-00B0:  MOVFF  06,FE0
-00B4:  MOVFF  05,FD8
-00B8:  RETFIE 0
+005A:  BTFSC  FF2.2
+005C:  GOTO   00AE
+0060:  MOVFF  0E,00
+0064:  MOVFF  0F,01
+0068:  MOVFF  10,02
+006C:  MOVFF  11,03
+0070:  MOVFF  0C,FE9
+0074:  MOVFF  07,FEA
+0078:  BSF    07.7
+007A:  MOVFF  08,FE1
+007E:  MOVFF  09,FE2
+0082:  MOVFF  0A,FD9
+0086:  MOVFF  0B,FDA
+008A:  MOVFF  12,FF3
+008E:  MOVFF  13,FF4
+0092:  MOVFF  14,FFA
+0096:  MOVFF  15,FF5
+009A:  MOVFF  16,FF6
+009E:  MOVFF  17,FF7
+00A2:  MOVF   04,W
+00A4:  MOVFF  06,FE0
+00A8:  MOVFF  05,FD8
+00AC:  RETFIE 0
 .................... /* 
 ....................  * l298n.c 
 ....................  * 
@@ -77,265 +73,192 @@ CCS PCH C Compiler, Version 4.140, 22098               22-set-14 16:30
 ....................  
 .................... #use delay(clock=15MHz) 
 *
-012A:  CLRF   FEA
-012C:  MOVLW  1A
-012E:  MOVWF  FE9
-0130:  MOVF   FEF,W
-0132:  BZ    0150
-0134:  MOVLW  04
-0136:  MOVWF  01
-0138:  CLRF   00
-013A:  DECFSZ 00,F
-013C:  BRA    013A
-013E:  DECFSZ 01,F
-0140:  BRA    0138
-0142:  MOVLW  DC
-0144:  MOVWF  00
-0146:  DECFSZ 00,F
-0148:  BRA    0146
-014A:  NOP   
-014C:  DECFSZ FEF,F
-014E:  BRA    0134
-0150:  GOTO   01D0 (RETURN)
+00F2:  CLRF   FEA
+00F4:  MOVLW  21
+00F6:  MOVWF  FE9
+00F8:  MOVF   FEF,W
+00FA:  BZ    0118
+00FC:  MOVLW  04
+00FE:  MOVWF  01
+0100:  CLRF   00
+0102:  DECFSZ 00,F
+0104:  BRA    0102
+0106:  DECFSZ 01,F
+0108:  BRA    0100
+010A:  MOVLW  DC
+010C:  MOVWF  00
+010E:  DECFSZ 00,F
+0110:  BRA    010E
+0112:  NOP   
+0114:  DECFSZ FEF,F
+0116:  BRA    00FC
+0118:  GOTO   018A (RETURN)
+.................... //#use delay(clock=9MHz) 
 .................... #use rs232(xmit=PIN_C6, baud=9600) 
 ....................  
-.................... #define ccp_nr 60000 
-....................  
 .................... #define debouce 100 
+.................... #define tmr0reg 55118 
+.................... //#define tmr0reg 59285 
 ....................  
 .................... #define pin_sobe PIN_B0 
 .................... #define pin_desce PIN_B1 
 ....................  
-.................... short ctrl1; 
-.................... short ctrl2; 
 .................... short ctrl_bto = TRUE; 
-.................... short a; 
-.................... short b; 
+.................... short ba; 
+.................... short bb; 
+.................... short dir; 
 ....................  
-.................... #int_ccp1 
-.................... void ccp1_isr() { 
-.................... 	clear_interrupt(INT_CCP1); 
+.................... int estado; 
+.................... int saida[6] = { 0b101, 0b100, 0b110, 0b010, 0b011, 0b001 }; 
+....................  
+.................... #INT_TIMER0 
+.................... void isr_timer0() { 
+.................... 	clear_interrupt(INT_TIMER0); 
 *
-00BA:  BCF    F9E.2
-.................... 	ctrl1 = !ctrl1; 
-00BC:  BTG    19.0
-.................... 	if (ctrl1) { 
-00BE:  BTFSS  19.0
-00C0:  BRA    00D8
-.................... 		setup_ccp1(CCP_COMPARE_CLR_ON_MATCH); 
-00C2:  BCF    F94.2
-00C4:  BSF    F8B.2
-00C6:  MOVLW  09
-00C8:  MOVWF  FBD
-.................... 		set_timer1(0); 
-00CA:  CLRF   FCF
-00CC:  CLRF   FCE
-.................... 		CCP_1 = ccp_nr; 
-00CE:  MOVLW  EA
-00D0:  MOVWF  FBF
-00D2:  MOVLW  60
-00D4:  MOVWF  FBE
+00AE:  BCF    FF2.2
+.................... 	set_timer0(tmr0reg); 
+00B0:  MOVLW  D7
+00B2:  MOVWF  FD7
+00B4:  MOVLW  4E
+00B6:  MOVWF  FD6
+.................... 	if (dir) { 
+00B8:  BTFSS  19.3
+00BA:  BRA    00C8
+.................... 		estado++; 
+00BC:  INCF   1A,F
+.................... 		if (estado > 5) 
+00BE:  MOVF   1A,W
+00C0:  SUBLW  05
+00C2:  BC    00C6
+.................... 			estado = 0; 
+00C4:  CLRF   1A
 .................... 	} else { 
-00D6:  BRA    00EC
-.................... 		setup_ccp1(CCP_COMPARE_SET_ON_MATCH); 
-00D8:  BCF    F94.2
-00DA:  BCF    F8B.2
-00DC:  MOVLW  08
-00DE:  MOVWF  FBD
-.................... 		set_timer1(0); 
-00E0:  CLRF   FCF
-00E2:  CLRF   FCE
-.................... 		CCP_1 = ccp_nr; 
-00E4:  MOVLW  EA
-00E6:  MOVWF  FBF
-00E8:  MOVLW  60
-00EA:  MOVWF  FBE
+00C6:  BRA    00D4
+.................... 		estado--; 
+00C8:  DECF   1A,F
+.................... 		if (estado > 5) 
+00CA:  MOVF   1A,W
+00CC:  SUBLW  05
+00CE:  BC    00D4
+.................... 			estado = 5; 
+00D0:  MOVLW  05
+00D2:  MOVWF  1A
 .................... 	} 
+.................... 	output_c(saida[estado]); 
+00D4:  CLRF   03
+00D6:  MOVF   1A,W
+00D8:  ADDLW  1B
+00DA:  MOVWF  FE9
+00DC:  MOVLW  00
+00DE:  ADDWFC 03,W
+00E0:  MOVWF  FEA
+00E2:  MOVFF  FEF,23
+00E6:  CLRF   F94
+00E8:  MOVFF  23,F8B
 .................... } 
 ....................  
-00EC:  BCF    F9E.2
-00EE:  GOTO   006C
-.................... #int_ccp2 
-.................... void ccp2_isr() { 
-.................... 	clear_interrupt(INT_CCP2); 
-00F2:  BCF    FA1.0
-.................... 	ctrl2 = !ctrl2; 
-00F4:  BTG    19.1
-.................... 	if (ctrl2) { 
-00F6:  BTFSS  19.1
-00F8:  BRA    0110
-.................... 		setup_ccp2(CCP_COMPARE_CLR_ON_MATCH); 
-00FA:  BCF    F94.1
-00FC:  BSF    F8B.1
-00FE:  MOVLW  09
-0100:  MOVWF  FBA
-.................... 		set_timer3(0); 
-0102:  CLRF   FB3
-0104:  CLRF   FB2
-.................... 		CCP_2 = ccp_nr; 
-0106:  MOVLW  EA
-0108:  MOVWF  FBC
-010A:  MOVLW  60
-010C:  MOVWF  FBB
-.................... 	} else { 
-010E:  BRA    0124
-.................... 		setup_ccp2(CCP_COMPARE_SET_ON_MATCH); 
-0110:  BCF    F94.1
-0112:  BCF    F8B.1
-0114:  MOVLW  08
-0116:  MOVWF  FBA
-.................... 		set_timer3(0); 
-0118:  CLRF   FB3
-011A:  CLRF   FB2
-.................... 		CCP_2 = ccp_nr; 
-011C:  MOVLW  EA
-011E:  MOVWF  FBC
-0120:  MOVLW  60
-0122:  MOVWF  FBB
-.................... 	} 
-.................... } 
-....................  
-0124:  BCF    FA1.0
-0126:  GOTO   006C
+00EC:  BCF    FF2.2
+00EE:  GOTO   0060
 .................... int main(void) { 
 *
-0154:  CLRF   FF8
-0156:  BCF    FD0.7
-0158:  BSF    07.7
-015A:  CLRF   FEA
-015C:  CLRF   FE9
-015E:  BCF    F94.6
-0160:  BSF    F8B.6
-0162:  BSF    19.2
-0164:  BSF    FC1.0
-0166:  BSF    FC1.1
-0168:  BSF    FC1.2
-016A:  BCF    FC1.3
+011C:  CLRF   FF8
+011E:  BCF    FD0.7
+0120:  BSF    07.7
+0122:  CLRF   FEA
+0124:  CLRF   FE9
+0126:  BCF    F94.6
+0128:  BSF    F8B.6
+012A:  BSF    19.0
+012C:  BSF    FC1.0
+012E:  BSF    FC1.1
+0130:  BSF    FC1.2
+0132:  BCF    FC1.3
+0134:  MOVLW  05
+0136:  MOVWF  1B
+0138:  MOVLW  04
+013A:  MOVWF  1C
+013C:  MOVLW  06
+013E:  MOVWF  1D
+0140:  MOVLW  02
+0142:  MOVWF  1E
+0144:  MOVLW  03
+0146:  MOVWF  1F
+0148:  MOVLW  01
+014A:  MOVWF  20
 ....................  
-.................... 	set_timer1(0); 
-016C:  CLRF   FCF
-016E:  CLRF   FCE
-.................... 	setup_timer_1(T1_INTERNAL | T1_DIV_BY_1); 
-0170:  MOVLW  85
-0172:  MOVWF  FCD
-.................... 	set_timer1(0); 
-0174:  CLRF   FCF
-0176:  CLRF   FCE
-.................... 	setup_timer_3(T3_INTERNAL | T3_CCP2 | T3_DIV_BY_1); 
-0178:  MOVLW  8D
-017A:  MOVWF  FB1
-.................... 	set_timer3(0); 
-017C:  CLRF   FB3
-017E:  CLRF   FB2
+.................... 	setup_timer_0(T0_INTERNAL | T0_DIV_1); 
+014C:  MOVLW  88
+014E:  MOVWF  FD5
+.................... 	set_timer0(tmr0reg); 
+0150:  MOVLW  D7
+0152:  MOVWF  FD7
+0154:  MOVLW  4E
+0156:  MOVWF  FD6
 ....................  
-.................... 	setup_ccp1(CCP_COMPARE_CLR_ON_MATCH); 
-0180:  BCF    F94.2
-0182:  BSF    F8B.2
-0184:  MOVLW  09
-0186:  MOVWF  FBD
-.................... 	CCP_1 = ccp_nr; 
-0188:  MOVLW  EA
-018A:  MOVWF  FBF
-018C:  MOVLW  60
-018E:  MOVWF  FBE
-.................... 	setup_ccp2(CCP_COMPARE_CLR_ON_MATCH); 
-0190:  BCF    F94.1
-0192:  BSF    F8B.1
-0194:  MOVLW  09
-0196:  MOVWF  FBA
-.................... 	CCP_2 = ccp_nr; 
-0198:  MOVLW  EA
-019A:  MOVWF  FBC
-019C:  MOVLW  60
-019E:  MOVWF  FBB
-....................  
-.................... 	clear_interrupt(INT_CCP1); 
-01A0:  BCF    F9E.2
-.................... 	clear_interrupt(INT_CCP2); 
-01A2:  BCF    FA1.0
-.................... //	enable_interrupts(INT_CCP1); 
-.................... //	enable_interrupts(INT_CCP2); 
+.................... //	enable_interrupts(INT_TIMER0); 
 .................... 	enable_interrupts(GLOBAL); 
-01A4:  MOVLW  C0
-01A6:  IORWF  FF2,F
+0158:  MOVLW  C0
+015A:  IORWF  FF2,F
 ....................  
 .................... 	while (TRUE) { 
-.................... 		a = !input(pin_sobe); 
-01A8:  BSF    F93.0
-01AA:  BCF    19.3
-01AC:  BTFSS  F81.0
-01AE:  BSF    19.3
-.................... 		b = !input(pin_desce); 
-01B0:  BSF    F93.1
-01B2:  BCF    19.4
-01B4:  BTFSS  F81.1
-01B6:  BSF    19.4
+.................... 		ba = !input(pin_sobe); 
+015C:  BSF    F93.0
+015E:  BCF    19.1
+0160:  BTFSS  F81.0
+0162:  BSF    19.1
+.................... 		bb = !input(pin_desce); 
+0164:  BSF    F93.1
+0166:  BCF    19.2
+0168:  BTFSS  F81.1
+016A:  BSF    19.2
 ....................  
-.................... 		if (a ^ b) { 
-01B8:  MOVLW  00
-01BA:  BTFSC  19.3
-01BC:  MOVLW  01
-01BE:  MOVWF  1B
-01C0:  MOVLW  00
-01C2:  BTFSC  19.4
-01C4:  MOVLW  01
-01C6:  XORWF  1B,W
-01C8:  BZ    01E6
-.................... 			delay_ms(debouce); 
-01CA:  MOVLW  64
-01CC:  MOVWF  1A
-01CE:  BRA    012A
+.................... 		if (ba ^ bb) { 
+016C:  MOVLW  00
+016E:  BTFSC  19.1
+0170:  MOVLW  01
+0172:  MOVWF  22
+0174:  MOVLW  00
+0176:  BTFSC  19.2
+0178:  MOVLW  01
+017A:  XORWF  22,W
+017C:  BZ    0196
 .................... 			if (ctrl_bto) { 
-01D0:  BTFSS  19.2
-01D2:  BRA    01E4
+017E:  BTFSS  19.0
+0180:  BRA    0194
 .................... 				ctrl_bto = FALSE; 
-01D4:  BCF    19.2
-.................... 				if (a) { 
-01D6:  BTFSS  19.3
-01D8:  BRA    01E0
-.................... 					clear_interrupt(INT_CCP1); 
-01DA:  BCF    F9E.2
-.................... 					enable_interrupts(INT_CCP1); 
-01DC:  BSF    F9D.2
-.................... 				} else { 
-01DE:  BRA    01E4
-.................... 					clear_interrupt(INT_CCP2); 
-01E0:  BCF    FA1.0
-.................... 					enable_interrupts(INT_CCP2); 
-01E2:  BSF    FA0.0
-.................... 				} 
+0182:  BCF    19.0
+.................... 				delay_ms(debouce); 
+0184:  MOVLW  64
+0186:  MOVWF  21
+0188:  BRA    00F2
+.................... 				clear_interrupt(INT_TIMER0); 
+018A:  BCF    FF2.2
+.................... 				enable_interrupts(INT_TIMER0); 
+018C:  BSF    FF2.5
+.................... 				dir = ba; 
+018E:  BCF    19.3
+0190:  BTFSC  19.1
+0192:  BSF    19.3
 .................... 			} 
 .................... 		} else if (!ctrl_bto) { 
-01E4:  BRA    0202
-01E6:  BTFSC  19.2
-01E8:  BRA    0202
+0194:  BRA    01A0
+0196:  BTFSC  19.0
+0198:  BRA    01A0
 .................... 			ctrl_bto = TRUE; 
-01EA:  BSF    19.2
-.................... 			setup_ccp1(CCP_COMPARE_CLR_ON_MATCH); 
-01EC:  BCF    F94.2
-01EE:  BSF    F8B.2
-01F0:  MOVLW  09
-01F2:  MOVWF  FBD
-.................... 			setup_ccp2(CCP_COMPARE_CLR_ON_MATCH); 
-01F4:  BCF    F94.1
-01F6:  BSF    F8B.1
-01F8:  MOVWF  FBA
-.................... 			disable_interrupts(INT_CCP1); 
-01FA:  BCF    F9D.2
-.................... 			disable_interrupts(INT_CCP2); 
-01FC:  BCF    FA0.0
-.................... 			ctrl1 = ctrl2 = FALSE; 
-01FE:  BCF    19.1
-0200:  BCF    19.0
+019A:  BSF    19.0
+.................... 			disable_interrupts(INT_TIMER0); 
+019C:  BCF    FF2.5
+.................... 			estado = 0; 
+019E:  CLRF   1A
 .................... 		} 
 .................... 	} 
-0202:  BRA    01A8
+01A0:  BRA    015C
 ....................  
 .................... 	return 0; 
-0204:  MOVLW  00
-0206:  MOVWF  01
+01A2:  MOVLW  00
+01A4:  MOVWF  01
 .................... } 
-0208:  SLEEP 
+01A6:  SLEEP 
 
 Configuration Fuses:
    Word  1: 2200   HS NOOSCSEN
