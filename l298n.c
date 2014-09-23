@@ -14,8 +14,14 @@
 #use rs232(xmit=PIN_C6, baud=9600)
 
 #define debouce 100
-#define tmr0reg 55118
+//#define tmr0reg 0
 //#define tmr0reg 59285
+
+#define inc 200
+
+#define R PIN_C0
+#define S PIN_C1
+#define T PIN_C2
 
 #define pin_sobe PIN_B0
 #define pin_desce PIN_B1
@@ -24,14 +30,59 @@ short ctrl_bto = TRUE;
 short ba;
 short bb;
 short dir;
+short write;
 
 int estado;
-int saida[6] = { 0b101, 0b100, 0b110, 0b010, 0b011, 0b001 };
+
+long timer0cont;
+long tmr0reg;
+
+void saida_onda(int i_estado) {
+	switch (i_estado) {
+	case 0:
+		output_high(R);
+		output_low(S);
+		output_high(T);
+		break;
+	case 1:
+		output_high(R);
+		output_low(S);
+		output_low(T);
+		break;
+	case 2:
+		output_high(R);
+		output_high(S);
+		output_low(T);
+		break;
+	case 3:
+		output_low(R);
+		output_high(S);
+		output_low(T);
+		break;
+	case 4:
+		output_low(R);
+		output_high(S);
+		output_high(T);
+		break;
+	case 5:
+		output_low(R);
+		output_low(S);
+		output_high(T);
+		break;
+	default:
+		output_low(R);
+		output_low(S);
+		output_low(T);
+	}
+}
 
 #INT_TIMER0
 void isr_timer0() {
+
 	clear_interrupt(INT_TIMER0);
+	tmr0reg += inc;
 	set_timer0(tmr0reg);
+
 	if (dir) {
 		estado++;
 		if (estado > 5)
@@ -41,16 +92,25 @@ void isr_timer0() {
 		if (estado > 5)
 			estado = 5;
 	}
-	output_c(saida[estado]);
+
+	saida_onda(estado);
+
+	write = TRUE;
 }
 
 int main(void) {
+
+	printf("Main\n\r");
 
 	setup_timer_0(T0_INTERNAL | T0_DIV_1);
 	set_timer0(tmr0reg);
 
 //	enable_interrupts(INT_TIMER0);
 	enable_interrupts(GLOBAL);
+
+	printf("Done\n\r");
+
+	saida_onda(255);
 
 	while (TRUE) {
 		ba = !input(pin_sobe);
@@ -68,6 +128,13 @@ int main(void) {
 			ctrl_bto = TRUE;
 			disable_interrupts(INT_TIMER0);
 			estado = 0;
+			saida_onda(255);
+			tmr0reg = 0;
+		}
+
+		if (write) {
+			write = FALSE;
+			printf("%lu - %u\n\r", (long) timer0cont++, estado);
 		}
 	}
 
