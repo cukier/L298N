@@ -16,6 +16,7 @@
 #define debouce 100
 //#define tmr0reg 0
 //#define tmr0reg 59285
+#define clr_output	255
 
 #define inc 200
 
@@ -27,10 +28,11 @@
 #define pin_desce PIN_B1
 
 short ctrl_bto = TRUE;
-short ba;
-short bb;
+short bto_sobe;
+short bto_desce;
 short dir;
 short write;
+short ctrl_inc;
 
 int estado;
 
@@ -100,41 +102,38 @@ void isr_timer0() {
 
 int main(void) {
 
-	printf("Main\n\r");
-
 	setup_timer_0(T0_INTERNAL | T0_DIV_1);
 	set_timer0(tmr0reg);
 
-//	enable_interrupts(INT_TIMER0);
 	enable_interrupts(GLOBAL);
+
+	saida_onda(clr_output);
 
 	printf("Done\n\r");
 
-	saida_onda(255);
-
 	while (TRUE) {
-		ba = !input(pin_sobe);
-		bb = !input(pin_desce);
+		bto_sobe = !input(pin_sobe);
+		bto_desce = !input(pin_desce);
 
-		if (ba ^ bb) {
+		if (bto_sobe ^ bto_desce) {
 			if (ctrl_bto) {
 				ctrl_bto = FALSE;
 				delay_ms(debouce);
 				clear_interrupt(INT_TIMER0);
 				enable_interrupts(INT_TIMER0);
-				dir = ba;
+				dir = bto_sobe;
 			}
 		} else if (!ctrl_bto) {
 			ctrl_bto = TRUE;
 			disable_interrupts(INT_TIMER0);
 			estado = 0;
-			saida_onda(255);
+			saida_onda(clr_output);
 			tmr0reg = 0;
 		}
 
 		if (write) {
 			write = FALSE;
-			printf("%lu - %u\n\r", (long) timer0cont++, estado);
+			printf("%lu - %u\n\r", timer0cont++, estado);
 		}
 	}
 
