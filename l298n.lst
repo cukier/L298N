@@ -1,15 +1,15 @@
-CCS PCH C Compiler, Version 4.140, 22098               23-set-14 17:10
+CCS PCH C Compiler, Version 4.140, 22098               24-set-14 14:23
 
                Filename:   D:\Projetos\L298N\l298n.lst
 
-               ROM used:   1108 bytes (3%)
-                           Largest free fragment is 31656
-               RAM used:   34 (2%) at main() level
-                           45 (3%) worst case
+               ROM used:   1282 bytes (4%)
+                           Largest free fragment is 31482
+               RAM used:   38 (2%) at main() level
+                           49 (3%) worst case
                Stack:     4 worst case (2 in main + 2 for interrupts)
 
 *
-0000:  GOTO   036C
+0000:  GOTO   039E
 *
 0008:  MOVWF  04
 000A:  MOVFF  FD8,05
@@ -68,66 +68,67 @@ CCS PCH C Compiler, Version 4.140, 22098               23-set-14 17:10
 .................... #device PIC18F252 
 .................... #list 
 ....................  
+.................... #DEVICE ADC=10 
 ....................  
 .................... #FUSES HS 
 ....................  
 .................... #use delay(clock=15MHz) 
 *
-01DE:  CLRF   FEA
-01E0:  MOVLW  20
-01E2:  MOVWF  FE9
-01E4:  MOVF   FEF,W
-01E6:  BZ    0204
-01E8:  MOVLW  04
-01EA:  MOVWF  01
-01EC:  CLRF   00
-01EE:  DECFSZ 00,F
-01F0:  BRA    01EE
-01F2:  DECFSZ 01,F
-01F4:  BRA    01EC
-01F6:  MOVLW  DC
-01F8:  MOVWF  00
-01FA:  DECFSZ 00,F
-01FC:  BRA    01FA
-01FE:  NOP   
-0200:  DECFSZ FEF,F
-0202:  BRA    01E8
-0204:  GOTO   03DC (RETURN)
+02E4:  CLRF   FEA
+02E6:  MOVLW  24
+02E8:  MOVWF  FE9
+02EA:  MOVF   FEF,W
+02EC:  BZ    030A
+02EE:  MOVLW  04
+02F0:  MOVWF  01
+02F2:  CLRF   00
+02F4:  DECFSZ 00,F
+02F6:  BRA    02F4
+02F8:  DECFSZ 01,F
+02FA:  BRA    02F2
+02FC:  MOVLW  DC
+02FE:  MOVWF  00
+0300:  DECFSZ 00,F
+0302:  BRA    0300
+0304:  NOP   
+0306:  DECFSZ FEF,F
+0308:  BRA    02EE
+030A:  GOTO   048E (RETURN)
 .................... //#use delay(clock=9MHz) 
 .................... #use rs232(xmit=PIN_C6, baud=9600) 
 *
-017C:  BCF    F94.6
-017E:  BCF    F8B.6
-0180:  MOVLW  08
-0182:  MOVWF  01
-0184:  BRA    0186
-0186:  NOP   
-0188:  BSF    01.7
-018A:  BRA    01A8
-018C:  BCF    01.7
-018E:  RRCF   2B,F
-0190:  BTFSC  FD8.0
-0192:  BSF    F8B.6
-0194:  BTFSS  FD8.0
-0196:  BCF    F8B.6
-0198:  BSF    01.6
-019A:  BRA    01A8
-019C:  BCF    01.6
-019E:  DECFSZ 01,F
-01A0:  BRA    018E
-01A2:  BRA    01A4
-01A4:  NOP   
-01A6:  BSF    F8B.6
-01A8:  MOVLW  7C
-01AA:  MOVWF  FE9
-01AC:  DECFSZ FE9,F
-01AE:  BRA    01AC
-01B0:  NOP   
-01B2:  BTFSC  01.7
-01B4:  BRA    018C
-01B6:  BTFSC  01.6
-01B8:  BRA    019C
-01BA:  RETURN 0
+0192:  BCF    F94.6
+0194:  BCF    F8B.6
+0196:  MOVLW  08
+0198:  MOVWF  01
+019A:  BRA    019C
+019C:  NOP   
+019E:  BSF    01.7
+01A0:  BRA    01BE
+01A2:  BCF    01.7
+01A4:  RRCF   2F,F
+01A6:  BTFSC  FD8.0
+01A8:  BSF    F8B.6
+01AA:  BTFSS  FD8.0
+01AC:  BCF    F8B.6
+01AE:  BSF    01.6
+01B0:  BRA    01BE
+01B2:  BCF    01.6
+01B4:  DECFSZ 01,F
+01B6:  BRA    01A4
+01B8:  BRA    01BA
+01BA:  NOP   
+01BC:  BSF    F8B.6
+01BE:  MOVLW  7C
+01C0:  MOVWF  FE9
+01C2:  DECFSZ FE9,F
+01C4:  BRA    01C2
+01C6:  NOP   
+01C8:  BTFSC  01.7
+01CA:  BRA    01A2
+01CC:  BTFSC  01.6
+01CE:  BRA    01B2
+01D0:  RETURN 0
 ....................  
 .................... #define debouce 100 
 .................... //#define tmr0reg 0 
@@ -154,11 +155,13 @@ CCS PCH C Compiler, Version 4.140, 22098               23-set-14 17:10
 ....................  
 .................... long timer0cont; 
 .................... long tmr0reg; 
+.................... long adc; 
+.................... long adcAux; 
 ....................  
 .................... void saida_onda(int i_estado) { 
 .................... 	switch (i_estado) { 
 *
-00AE:  MOVF   2C,W
+00AE:  MOVF   30,W
 00B0:  XORLW  00
 00B2:  BZ    00CA
 00B4:  XORLW  01
@@ -263,200 +266,259 @@ CCS PCH C Compiler, Version 4.140, 22098               23-set-14 17:10
 ....................  
 .................... 	clear_interrupt(INT_TIMER0); 
 012C:  BCF    FF2.2
-.................... 	tmr0reg += inc; 
-012E:  MOVLW  C8
-0130:  ADDWF  1E,F
-0132:  MOVLW  00
-0134:  ADDWFC 1F,F
 .................... 	set_timer0(tmr0reg); 
-0136:  MOVFF  1F,FD7
-013A:  MOVFF  1E,FD6
+012E:  MOVFF  1F,FD7
+0132:  MOVFF  1E,FD6
 ....................  
 .................... 	if (dir) { 
-013E:  BTFSS  1A.3
-0140:  BRA    014E
+0136:  BTFSS  1A.3
+0138:  BRA    0146
 .................... 		estado++; 
-0142:  INCF   1B,F
+013A:  INCF   1B,F
 .................... 		if (estado > 5) 
-0144:  MOVF   1B,W
-0146:  SUBLW  05
-0148:  BC    014C
+013C:  MOVF   1B,W
+013E:  SUBLW  05
+0140:  BC    0144
 .................... 			estado = 0; 
-014A:  CLRF   1B
+0142:  CLRF   1B
 .................... 	} else { 
-014C:  BRA    015A
+0144:  BRA    0152
 .................... 		estado--; 
-014E:  DECF   1B,F
+0146:  DECF   1B,F
 .................... 		if (estado > 5) 
-0150:  MOVF   1B,W
-0152:  SUBLW  05
-0154:  BC    015A
+0148:  MOVF   1B,W
+014A:  SUBLW  05
+014C:  BC    0152
 .................... 			estado = 5; 
-0156:  MOVLW  05
-0158:  MOVWF  1B
+014E:  MOVLW  05
+0150:  MOVWF  1B
 .................... 	} 
 ....................  
 .................... 	saida_onda(estado); 
-015A:  MOVFF  1B,2C
-015E:  RCALL  00AE
+0152:  MOVFF  1B,30
+0156:  RCALL  00AE
 ....................  
 .................... 	write = TRUE; 
-0160:  BSF    1A.4
+0158:  BSF    1A.4
 .................... } 
 ....................  
-0162:  BCF    FF2.2
-0164:  GOTO   0060
+015A:  BCF    FF2.2
+015C:  GOTO   0060
 .................... int main(void) { 
 *
-036C:  CLRF   FF8
-036E:  BCF    FD0.7
-0370:  BSF    07.7
-0372:  CLRF   FEA
-0374:  CLRF   FE9
-0376:  BCF    F94.6
-0378:  BSF    F8B.6
-037A:  BSF    1A.0
-037C:  BSF    FC1.0
-037E:  BSF    FC1.1
-0380:  BSF    FC1.2
-0382:  BCF    FC1.3
+039E:  CLRF   FF8
+03A0:  BCF    FD0.7
+03A2:  BSF    07.7
+03A4:  CLRF   FEA
+03A6:  CLRF   FE9
+03A8:  BCF    F94.6
+03AA:  BSF    F8B.6
+03AC:  BSF    1A.0
+03AE:  BSF    FC1.0
+03B0:  BSF    FC1.1
+03B2:  BSF    FC1.2
+03B4:  BCF    FC1.3
 ....................  
-.................... 	setup_timer_0(T0_INTERNAL | T0_DIV_1); 
-0384:  MOVLW  88
-0386:  MOVWF  FD5
+.................... 	setup_adc(ADC_CLOCK_INTERNAL); 
+03B6:  BCF    FC1.6
+03B8:  BSF    FC2.6
+03BA:  BSF    FC2.7
+03BC:  BSF    FC1.7
+03BE:  BSF    FC2.0
+.................... 	setup_adc_ports(AN0); 
+03C0:  BCF    FC1.0
+03C2:  BSF    FC1.1
+03C4:  BSF    FC1.2
+03C6:  BSF    FC1.3
+.................... 	set_adc_channel(0); 
+03C8:  MOVLW  00
+03CA:  MOVWF  01
+03CC:  MOVF   FC2,W
+03CE:  ANDLW  C7
+03D0:  IORWF  01,W
+03D2:  MOVWF  FC2
+....................  
+.................... 	setup_timer_0(T0_INTERNAL | T0_DIV_8); 
+03D4:  MOVLW  82
+03D6:  MOVWF  FD5
 .................... 	set_timer0(tmr0reg); 
-0388:  MOVFF  1F,FD7
-038C:  MOVFF  1E,FD6
+03D8:  MOVFF  1F,FD7
+03DC:  MOVFF  1E,FD6
 ....................  
 .................... 	enable_interrupts(GLOBAL); 
-0390:  MOVLW  C0
-0392:  IORWF  FF2,F
-0394:  CLRF   19
-0396:  BTFSC  FF2.7
-0398:  BSF    19.7
-039A:  BCF    FF2.7
+03E0:  MOVLW  C0
+03E2:  IORWF  FF2,F
+03E4:  CLRF   19
+03E6:  BTFSC  FF2.7
+03E8:  BSF    19.7
+03EA:  BCF    FF2.7
 ....................  
 .................... 	saida_onda(clr_output); 
-039C:  SETF   2C
-039E:  RCALL  00AE
-03A0:  BTFSC  19.7
-03A2:  BSF    FF2.7
+03EC:  SETF   30
+03EE:  RCALL  00AE
+03F0:  BTFSC  19.7
+03F2:  BSF    FF2.7
 ....................  
 .................... 	printf("Done\n\r"); 
-03A4:  MOVLW  68
-03A6:  MOVWF  FF6
-03A8:  MOVLW  01
-03AA:  MOVWF  FF7
-03AC:  BRA    01BC
+03F4:  MOVLW  60
+03F6:  MOVWF  FF6
+03F8:  MOVLW  01
+03FA:  MOVWF  FF7
+03FC:  BRA    01D2
 ....................  
 .................... 	while (TRUE) { 
+....................  
+.................... 		adc = read_adc(); 
+03FE:  BSF    FC2.2
+0400:  BTFSC  FC2.2
+0402:  BRA    0400
+0404:  MOVFF  FC3,20
+0408:  MOVFF  FC4,21
+....................  
+.................... 		if (adc != adcAux) { 
+040C:  MOVF   22,W
+040E:  SUBWF  20,W
+0410:  BNZ   0418
+0412:  MOVF   23,W
+0414:  SUBWF  21,W
+0416:  BZ    0460
+.................... 			adcAux = adc; 
+0418:  MOVFF  21,23
+041C:  MOVFF  20,22
+.................... 			tmr0reg = (long) 65535 / 1024 * adc; 
+0420:  CLRF   25
+0422:  MOVLW  3F
+0424:  MOVWF  24
+0426:  MOVFF  21,27
+042A:  MOVFF  20,26
+042E:  BRA    01F4
+0430:  MOVFF  02,1F
+0434:  MOVFF  01,1E
+.................... 			printf("Tmr0 reg alterado para %lu\n\r", adc); 
+0438:  MOVLW  68
+043A:  MOVWF  FF6
+043C:  MOVLW  01
+043E:  MOVWF  FF7
+0440:  MOVLW  17
+0442:  MOVWF  26
+0444:  RCALL  0214
+0446:  MOVLW  10
+0448:  MOVWF  FE9
+044A:  MOVFF  21,27
+044E:  MOVFF  20,26
+0452:  RCALL  0232
+0454:  MOVLW  0A
+0456:  MOVWF  2F
+0458:  RCALL  0192
+045A:  MOVLW  0D
+045C:  MOVWF  2F
+045E:  RCALL  0192
+.................... 		} 
+....................  
 .................... 		bto_sobe = !input(pin_sobe); 
-03AE:  BSF    F93.0
-03B0:  BCF    1A.1
-03B2:  BTFSS  F81.0
-03B4:  BSF    1A.1
+0460:  BSF    F93.0
+0462:  BCF    1A.1
+0464:  BTFSS  F81.0
+0466:  BSF    1A.1
 .................... 		bto_desce = !input(pin_desce); 
-03B6:  BSF    F93.1
-03B8:  BCF    1A.2
-03BA:  BTFSS  F81.1
-03BC:  BSF    1A.2
+0468:  BSF    F93.1
+046A:  BCF    1A.2
+046C:  BTFSS  F81.1
+046E:  BSF    1A.2
 ....................  
 .................... 		if (bto_sobe ^ bto_desce) { 
-03BE:  MOVLW  00
-03C0:  BTFSC  1A.1
-03C2:  MOVLW  01
-03C4:  MOVWF  21
-03C6:  MOVLW  00
-03C8:  BTFSC  1A.2
-03CA:  MOVLW  01
-03CC:  XORWF  21,W
-03CE:  BZ    03E8
+0470:  MOVLW  00
+0472:  BTFSC  1A.1
+0474:  MOVLW  01
+0476:  MOVWF  25
+0478:  MOVLW  00
+047A:  BTFSC  1A.2
+047C:  MOVLW  01
+047E:  XORWF  25,W
+0480:  BZ    049A
 .................... 			if (ctrl_bto) { 
-03D0:  BTFSS  1A.0
-03D2:  BRA    03E6
+0482:  BTFSS  1A.0
+0484:  BRA    0498
 .................... 				ctrl_bto = FALSE; 
-03D4:  BCF    1A.0
+0486:  BCF    1A.0
 .................... 				delay_ms(debouce); 
-03D6:  MOVLW  64
-03D8:  MOVWF  20
-03DA:  BRA    01DE
+0488:  MOVLW  64
+048A:  MOVWF  24
+048C:  BRA    02E4
 .................... 				clear_interrupt(INT_TIMER0); 
-03DC:  BCF    FF2.2
+048E:  BCF    FF2.2
 .................... 				enable_interrupts(INT_TIMER0); 
-03DE:  BSF    FF2.5
+0490:  BSF    FF2.5
 .................... 				dir = bto_sobe; 
-03E0:  BCF    1A.3
-03E2:  BTFSC  1A.1
-03E4:  BSF    1A.3
+0492:  BCF    1A.3
+0494:  BTFSC  1A.1
+0496:  BSF    1A.3
 .................... 			} 
 .................... 		} else if (!ctrl_bto) { 
-03E6:  BRA    0406
-03E8:  BTFSC  1A.0
-03EA:  BRA    0406
+0498:  BRA    04B4
+049A:  BTFSC  1A.0
+049C:  BRA    04B4
 .................... 			ctrl_bto = TRUE; 
-03EC:  BSF    1A.0
+049E:  BSF    1A.0
 .................... 			disable_interrupts(INT_TIMER0); 
-03EE:  BCF    FF2.5
+04A0:  BCF    FF2.5
 .................... 			estado = 0; 
-03F0:  CLRF   1B
-03F2:  CLRF   19
-03F4:  BTFSC  FF2.7
-03F6:  BSF    19.7
-03F8:  BCF    FF2.7
+04A2:  CLRF   1B
+04A4:  CLRF   19
+04A6:  BTFSC  FF2.7
+04A8:  BSF    19.7
+04AA:  BCF    FF2.7
 .................... 			saida_onda(clr_output); 
-03FA:  SETF   2C
-03FC:  RCALL  00AE
-03FE:  BTFSC  19.7
-0400:  BSF    FF2.7
-.................... 			tmr0reg = 0; 
-0402:  CLRF   1F
-0404:  CLRF   1E
+04AC:  SETF   30
+04AE:  RCALL  00AE
+04B0:  BTFSC  19.7
+04B2:  BSF    FF2.7
 .................... 		} 
 ....................  
 .................... 		if (write) { 
-0406:  BTFSS  1A.4
-0408:  BRA    0450
+04B4:  BTFSS  1A.4
+04B6:  BRA    04FE
 .................... 			write = FALSE; 
-040A:  BCF    1A.4
+04B8:  BCF    1A.4
 .................... 			printf("%lu - %u\n\r", timer0cont++, estado); 
-040C:  MOVFF  1D,03
-0410:  MOVF   1C,W
-0412:  INCF   1C,F
-0414:  BTFSC  FD8.2
-0416:  INCF   1D,F
-0418:  MOVWF  20
-041A:  MOVFF  03,21
-041E:  MOVLW  10
-0420:  MOVWF  FE9
-0422:  MOVFF  03,23
-0426:  MOVFF  20,22
-042A:  BRA    0208
-042C:  MOVLW  73
-042E:  MOVWF  FF6
-0430:  MOVLW  01
-0432:  MOVWF  FF7
-0434:  MOVLW  03
-0436:  MOVWF  22
-0438:  BRA    02BC
-043A:  MOVFF  1B,22
-043E:  MOVLW  1B
-0440:  MOVWF  23
-0442:  BRA    0304
-0444:  MOVLW  0A
-0446:  MOVWF  2B
-0448:  RCALL  017C
-044A:  MOVLW  0D
-044C:  MOVWF  2B
-044E:  RCALL  017C
+04BA:  MOVFF  1D,03
+04BE:  MOVF   1C,W
+04C0:  INCF   1C,F
+04C2:  BTFSC  FD8.2
+04C4:  INCF   1D,F
+04C6:  MOVWF  24
+04C8:  MOVFF  03,25
+04CC:  MOVLW  10
+04CE:  MOVWF  FE9
+04D0:  MOVFF  03,27
+04D4:  MOVFF  24,26
+04D8:  RCALL  0232
+04DA:  MOVLW  89
+04DC:  MOVWF  FF6
+04DE:  MOVLW  01
+04E0:  MOVWF  FF7
+04E2:  MOVLW  03
+04E4:  MOVWF  26
+04E6:  RCALL  0214
+04E8:  MOVFF  1B,26
+04EC:  MOVLW  1B
+04EE:  MOVWF  27
+04F0:  BRA    0336
+04F2:  MOVLW  0A
+04F4:  MOVWF  2F
+04F6:  RCALL  0192
+04F8:  MOVLW  0D
+04FA:  MOVWF  2F
+04FC:  RCALL  0192
 .................... 		} 
 .................... 	} 
-0450:  BRA    03AE
+04FE:  BRA    03FE
 ....................  
 .................... 	return 0; 
-0452:  MOVLW  00
-0454:  MOVWF  01
+0500:  MOVLW  00
+0502:  MOVWF  01
 .................... } 
-0456:  SLEEP 
+0504:  SLEEP 
 
 Configuration Fuses:
    Word  1: 2200   HS NOOSCSEN

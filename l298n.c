@@ -6,6 +6,7 @@
  */
 
 #include<18F252.h>
+#DEVICE ADC=10
 
 #FUSES HS
 
@@ -38,6 +39,8 @@ int estado;
 
 long timer0cont;
 long tmr0reg;
+long adc;
+long adcAux;
 
 void saida_onda(int i_estado) {
 	switch (i_estado) {
@@ -82,7 +85,6 @@ void saida_onda(int i_estado) {
 void isr_timer0() {
 
 	clear_interrupt(INT_TIMER0);
-	tmr0reg += inc;
 	set_timer0(tmr0reg);
 
 	if (dir) {
@@ -102,7 +104,11 @@ void isr_timer0() {
 
 int main(void) {
 
-	setup_timer_0(T0_INTERNAL | T0_DIV_1);
+	setup_adc(ADC_CLOCK_INTERNAL);
+	setup_adc_ports(AN0);
+	set_adc_channel(0);
+
+	setup_timer_0(T0_INTERNAL | T0_DIV_8);
 	set_timer0(tmr0reg);
 
 	enable_interrupts(GLOBAL);
@@ -112,6 +118,15 @@ int main(void) {
 	printf("Done\n\r");
 
 	while (TRUE) {
+
+		adc = read_adc();
+
+		if (adc != adcAux) {
+			adcAux = adc;
+			tmr0reg = (long) 65535 / 1024 * adc;
+			printf("Tmr0 reg alterado para %lu\n\r", adc);
+		}
+
 		bto_sobe = !input(pin_sobe);
 		bto_desce = !input(pin_desce);
 
@@ -128,7 +143,6 @@ int main(void) {
 			disable_interrupts(INT_TIMER0);
 			estado = 0;
 			saida_onda(clr_output);
-			tmr0reg = 0;
 		}
 
 		if (write) {
