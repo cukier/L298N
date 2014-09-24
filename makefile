@@ -6,7 +6,7 @@ all: l298n
 
 l298n: l298n.c
 	$(CC) $(CFLAGS) l298n.c
-	#$(W)$(CC) $(CFLAGS) l298n.c
+#$(W)$(CC) $(CFLAGS) l298n.c
 
 clean:
-	rm *.cof *.err *.esym *.hex *.lst
+	rm *.cof *.err *.esym *.hex *.lst *.PWI *.STA *.sym *.tre *.DBK

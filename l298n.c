@@ -23,7 +23,7 @@
 
 #define R PIN_C0
 #define S PIN_C1
-#define T PIN_C2
+#define T PIN_C3
 
 #define pin_sobe PIN_B0
 #define pin_desce PIN_B1
@@ -111,6 +111,11 @@ int main(void) {
 	setup_timer_0(T0_INTERNAL | T0_DIV_8);
 	set_timer0(tmr0reg);
 
+	setup_timer_2(T2_DIV_BY_1, 0xFF, 1);
+
+	setup_ccp1(CCP_PWM);
+	set_pwm1_duty(512);
+
 	enable_interrupts(GLOBAL);
 
 	saida_onda(clr_output);
@@ -119,6 +124,7 @@ int main(void) {
 
 	while (TRUE) {
 
+		delay_us(10);
 		adc = read_adc();
 
 		if (adc != adcAux) {
