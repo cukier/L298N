@@ -12,7 +12,7 @@
 
 #use delay(clock=15MHz)
 //#use delay(clock=9MHz)
-#use rs232(xmit=PIN_C6, baud=9600)
+//#use rs232(xmit=PIN_C6, baud=9600)
 
 #define debouce 100
 //#define tmr0reg 0
@@ -98,8 +98,6 @@ void isr_timer0() {
 	}
 
 	saida_onda(estado);
-
-	write = TRUE;
 }
 
 int main(void) {
@@ -108,19 +106,18 @@ int main(void) {
 	setup_adc_ports(AN0);
 	set_adc_channel(0);
 
-	setup_timer_0(T0_INTERNAL | T0_DIV_8);
+	setup_timer_0(T0_INTERNAL | T0_DIV_1);
 	set_timer0(tmr0reg);
 
 	setup_timer_2(T2_DIV_BY_1, 0xFF, 1);
 
-	setup_ccp1(CCP_PWM);
+//	setup_ccp1(CCP_PWM);
+	setup_ccp1(CCP_OFF);
 	set_pwm1_duty(512);
 
 	enable_interrupts(GLOBAL);
 
 	saida_onda(clr_output);
-
-	printf("Done\n\r");
 
 	while (TRUE) {
 
@@ -129,8 +126,8 @@ int main(void) {
 
 		if (adc != adcAux) {
 			adcAux = adc;
-			tmr0reg = (long) 65535 / 1024 * adc;
-			printf("Tmr0 reg alterado para %lu\n\r", adc);
+//			tmr0reg = (long) 65535 / 1024 * adc;
+			set_pwm1_duty(adc);
 		}
 
 		bto_sobe = !input(pin_sobe);
@@ -143,17 +140,14 @@ int main(void) {
 				clear_interrupt(INT_TIMER0);
 				enable_interrupts(INT_TIMER0);
 				dir = bto_sobe;
+				setup_ccp1(CCP_PWM);
 			}
 		} else if (!ctrl_bto) {
 			ctrl_bto = TRUE;
 			disable_interrupts(INT_TIMER0);
 			estado = 0;
 			saida_onda(clr_output);
-		}
-
-		if (write) {
-			write = FALSE;
-			printf("%lu - %u\n\r", timer0cont++, estado);
+			setup_ccp1(CCP_OFF);
 		}
 	}
 
