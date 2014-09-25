@@ -18,8 +18,8 @@
 //#define tmr0reg 0
 //#define tmr0reg 59285
 #define clr_output	255
-
 #define inc 200
+#define max 24
 
 #define R PIN_C0
 #define S PIN_C1
@@ -40,7 +40,20 @@ int estado;
 long timer0cont;
 long tmr0reg;
 long adc;
-long adcAux;
+long adcAux1;
+long adcAux2;
+long pwm_cont;
+
+/*long pwm_duty[max] = { 512, 644, 768, 874, 955, 1006, 1023, 1006, 955, 874, 768,
+ 644, 512, 379, 256, 150, 68, 17, 1, 17, 68, 150, 256, 379 };
+
+ #INT_TIMER2
+ void isr_timer2() {
+ clear_interrupt(INT_TIMER2);
+ if (pwm_cont >= max)
+ pwm_cont = 0;
+ set_pwm1_duty(pwm_duty[pwm_cont++]);
+ }*/
 
 void saida_onda(int i_estado) {
 	switch (i_estado) {
@@ -100,33 +113,44 @@ void isr_timer0() {
 	saida_onda(estado);
 }
 
+long le_canal(int channel) {
+	set_adc_channel(channel);
+	delay_us(40);
+	return read_adc();
+}
+
 int main(void) {
 
 	setup_adc(ADC_CLOCK_INTERNAL);
-	setup_adc_ports(AN0);
-	set_adc_channel(0);
+	setup_adc_ports(AN0_AN1_AN3);
 
-	setup_timer_0(T0_INTERNAL | T0_DIV_1);
+	setup_timer_0(T0_INTERNAL | T0_DIV_4);
 	set_timer0(tmr0reg);
 
-	setup_timer_2(T2_DIV_BY_1, 0xFF, 1);
+	setup_timer_2(T2_DIV_BY_1, 0xFF, 16);
 
-//	setup_ccp1(CCP_PWM);
 	setup_ccp1(CCP_OFF);
 	set_pwm1_duty(512);
 
+//	clear_interrupt(INT_TIMER2);
+//	enable_interrupts(INT_TIMER2);
 	enable_interrupts(GLOBAL);
 
 	saida_onda(clr_output);
 
 	while (TRUE) {
 
-		delay_us(10);
-		adc = read_adc();
+		adc = le_canal(0);
 
-		if (adc != adcAux) {
-			adcAux = adc;
-//			tmr0reg = (long) 65535 / 1024 * adc;
+		if (adc != adcAux1) {
+			adcAux1 = adc;
+			tmr0reg = (long) 65535 / 1024 * adc;
+		}
+
+		adc = le_canal(1);
+
+		if (adc != adcAux2) {
+			adcAux2 = adc;
 			set_pwm1_duty(adc);
 		}
 
